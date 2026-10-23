@@ -3,7 +3,13 @@ import hashlib
 import json
 import os
 import pandas as pd
-from curl_cffi import requests
+try:
+    from curl_cffi import requests
+    HAS_CURL_CFFI = True
+except ImportError:
+    import requests
+    HAS_CURL_CFFI = False
+
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad, pad
 
@@ -57,7 +63,14 @@ def call_api(endpoint, payload=None):
         "encrypted": True,
         "data": encrypt_cryptojs(payload)
     }
-    res = requests.post(url, json=body, impersonate="chrome", timeout=60)
+    kwargs = {"json": body, "timeout": 60}
+    if HAS_CURL_CFFI:
+        kwargs["impersonate"] = "chrome"
+    else:
+        kwargs["headers"] = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+    res = requests.post(url, **kwargs)
     if res.status_code != 200:
         raise Exception(f"API Error {res.status_code}: {res.text}")
     res_json = res.json()
@@ -67,15 +80,21 @@ def call_api(endpoint, payload=None):
     return res_json.get("data")
 
 
-def scrape_kabupaten(even_tka="smasmk", kd_prop="02", output_prefix=None):
+def scrape_kabupaten(even_tka="smasmk", kd_prop="02", output_prefix=None, kd_jenjang="T", jenis_sek="T", label_jenjang=None):
     """
     Scraping nilai TKA tingkat Kabupaten/Kota.
     Parameter:
       - even_tka: 'sd', 'smp', atau 'smasmk'
       - kd_prop: '02' (Jawa Barat), atau '' (Nasional)
-      - output_prefix: prefix nama file output CSV
+      - output_prefix: prefix path / nama file output CSV
+      - kd_jenjang: 'T' (Semua), 'SMP', 'PAKETB', 'SLB', 'SD', 'SMA', 'SMK', dll.
+      - jenis_sek:
+          Untuk SMP: 'T' (Semua), '1' (SMP), '2' (MTs), '6' (SMPTK), '7' (MADYA WP)
+          Untuk SD : 'T' (Semua), '1' (SD), '2' (MI), '4' (SDTK), '6' (ADI WP), '7' (Budha)
+          Untuk SMA: 'T' (Semua), '1' (SMA), '2' (MA), '5' (SMAgK), dll.
+      - label_jenjang: Label teks untuk kolom CSV (misal 'MTS', 'SMP', 'SD', dll.)
     """
-    label_even = even_tka.upper()
+    label_even = label_jenjang.upper() if label_jenjang else even_tka.upper()
     if output_prefix is None:
         prop_label = "jabar" if kd_prop == "02" else ("nasional" if kd_prop == "" else f"prop_{kd_prop}")
         output_prefix = f"tka_kabupaten_{prop_label}_{even_tka}"
@@ -101,13 +120,13 @@ def scrape_kabupaten(even_tka="smasmk", kd_prop="02", output_prefix=None):
         print(f"      - {m.get('urut')}. {m.get('mapel')} ({m.get('nama_field')})")
 
     # 3. Request Data Kabupaten/Kota
-    print(f"[2/3] Mengambil data statistik kabupaten/kota ({label_even})...")
+    print(f"[2/3] Mengambil data statistik kabupaten/kota ({label_even} - jenjang: {kd_jenjang}, jenis: {jenis_sek})...")
     payload = {
         "kd_prop": kd_prop,
         "kd_rayon": "",
         "even_tka": even_tka,
-        "kd_jenjang": "T",    # Semua Jenjang
-        "jenis_sek": "T",     # Semua Jenis Sekolah
+        "kd_jenjang": kd_jenjang,
+        "jenis_sek": jenis_sek,
         "status_sek": "T",    # Negeri + Swasta
         "page": 1,
         "limit": 1000 if not kd_prop else 100
@@ -176,6 +195,11 @@ def scrape_kabupaten(even_tka="smasmk", kd_prop="02", output_prefix=None):
 
         parsed_wide.append(wide_entry)
 
+    # Pastikan folder tujuan ada
+    output_dir = os.path.dirname(output_prefix)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+
     # Simpan Long CSV
     df_long = pd.DataFrame(parsed_long)
     csv_long_file = f"{output_prefix}.csv"
@@ -192,13 +216,26 @@ def scrape_kabupaten(even_tka="smasmk", kd_prop="02", output_prefix=None):
 
 
 if __name__ == "__main__":
-    # 1. Scraping SD Jawa Barat
-    scrape_kabupaten(even_tka="sd", kd_prop="02", output_prefix="tka_kabupaten_jabar_sd")
+    tka_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "TKA"))
 
-    # 2. Scraping SMP Jawa Barat
-    scrape_kabupaten(even_tka="smp", kd_prop="02", output_prefix="tka_kabupaten_jabar_smp")
+    # 1. Scraping SMP Saja - Jawa Barat (kd_jenjang="SMP", jenis_sek="1")
+    scrape_kabupaten(
+        even_tka="smp",
+        kd_prop="02",
+        kd_jenjang="SMP",
+        jenis_sek="1",
+        label_jenjang="SMP",
+        output_prefix=os.path.join(tka_dir, "tka_kabupaten_jabar_smp")
+    )
 
-    # 3. Scraping SMA/SMK Jawa Barat
-    scrape_kabupaten(even_tka="smasmk", kd_prop="02", output_prefix="tka_kabupaten_jabar")
+    # 2. Scraping MTs Saja - Jawa Barat (kd_jenjang="SMP", jenis_sek="2")
+    scrape_kabupaten(
+        even_tka="smp",
+        kd_prop="02",
+        kd_jenjang="SMP",
+        jenis_sek="2",
+        label_jenjang="MTS",
+        output_prefix=os.path.join(tka_dir, "tka_kabupaten_jabar_mts")
+    )
 
-    print("\nSemua jenjang (SD, SMP, SMA/SMK) untuk Jawa Barat telah selesai di-scrape!")
+    print("\nScraping SMP dan MTs Jawa Barat berhasil disimpan di folder dataset/TKA!")
