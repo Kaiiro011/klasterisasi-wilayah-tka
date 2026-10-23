@@ -1,0 +1,28 @@
+﻿kode_wilayah,kode_bps,nama_kabkota,nama_pendek,jenis,tka_rerata_bind,tka_rerata_mtk,rasio_murid_guru,rasio_murid_sekolah,pct_penduduk_miskin,pct_tkp_s1_ke_atas
+32.01,3201,Kabupaten Bogor,Bogor,Kabupaten,62.61,40.44,23.0,309.95,6.26,12.19
+32.02,3202,Kabupaten Sukabumi,Sukabumi,Kabupaten,58.36,38.39,19.43,223.1,6.41,11.71
+32.03,3203,Kabupaten Cianjur,Cianjur,Kabupaten,56.11,37.59,19.38,219.07,9.82,8.94
+32.04,3204,Kabupaten Bandung,Bandung,Kabupaten,62.59,40.23,20.11,387.29,6.04,9.73
+32.05,3205,Kabupaten Garut,Garut,Kabupaten,57.41,38.48,18.45,249.56,9.39,9.78
+32.06,3206,Kabupaten Tasikmalaya,Tasikmalaya,Kabupaten,59.68,38.85,15.73,205.94,10.15,11.69
+32.07,3207,Kabupaten Ciamis,Ciamis,Kabupaten,61.5,39.11,16.09,282.61,7.19,11.34
+32.08,3208,Kabupaten Kuningan,Kuningan,Kabupaten,63.19,41.59,16.36,351.02,10.74,15.0
+32.09,3209,Kabupaten Cirebon,Cirebon,Kabupaten,59.55,39.1,17.64,375.4,10.23,7.23
+32.10,3210,Kabupaten Majalengka,Majalengka,Kabupaten,60.63,39.29,17.48,331.24,10.31,12.01
+32.11,3211,Kabupaten Sumedang,Sumedang,Kabupaten,64.37,40.37,16.79,327.31,8.81,10.86
+32.12,3212,Kabupaten Indramayu,Indramayu,Kabupaten,58.19,38.32,19.02,297.54,11.02,10.56
+32.13,3213,Kabupaten Subang,Subang,Kabupaten,60.2,39.0,18.06,356.26,9.23,10.58
+32.14,3214,Kabupaten Purwakarta,Purwakarta,Kabupaten,61.33,39.41,20.25,336.04,7.87,14.15
+32.15,3215,Kabupaten Karawang,Karawang,Kabupaten,60.44,39.42,24.23,442.23,7.08,8.94
+32.16,3216,Kabupaten Bekasi,Bekasi,Kabupaten,62.29,40.38,20.38,320.46,4.36,15.46
+32.17,3217,Kabupaten Bandung Barat,Bandung Barat,Kabupaten,63.31,40.14,19.39,318.69,9.87,12.13
+32.18,3218,Kabupaten Pangandaran,Pangandaran,Kabupaten,61.62,39.63,14.04,238.71,8.03,8.94
+32.71,3271,Kota Bogor,Kota Bogor,Kota,69.61,43.73,19.6,344.57,5.89,12.68
+32.72,3272,Kota Sukabumi,Kota Sukabumi,Kota,66.99,41.96,19.38,353.3,6.9,17.19
+32.73,3273,Kota Bandung,Kota Bandung,Kota,71.26,44.33,18.88,367.44,3.78,18.89
+32.74,3274,Kota Cirebon,Kota Cirebon,Kota,67.33,43.31,15.97,330.43,8.66,13.24
+32.75,3275,Kota Bekasi,Kota Bekasi,Kota,70.3,44.71,19.02,323.45,3.96,16.14
+32.76,3276,Kota Depok,Kota Depok,Kota,69.39,43.35,17.92,285.58,2.31,14.69
+32.77,3277,Kota Cimahi,Kota Cimahi,Kota,71.57,44.32,20.54,443.76,4.2,19.44
+32.78,3278,Kota Tasikmalaya,Kota Tasikmalaya,Kota,63.76,40.75,16.45,320.98,10.84,16.67
+32.79,3279,Kota Banjar,Kota Banjar,Kota,62.71,39.75,14.16,273.14,5.73,10.19
