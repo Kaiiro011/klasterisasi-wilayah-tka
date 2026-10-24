@@ -11,7 +11,6 @@ df = pd.read_csv(DATA_PATH)
 # 2. Pilih lima fitur klasterisasi
 fitur = [
     "tka_rerata_mtk",
-    "tka_rerata_bind",
     "rasio_murid_guru",
     "rasio_murid_sekolah",
     "pct_penduduk_miskin"

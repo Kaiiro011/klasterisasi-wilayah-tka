@@ -22,7 +22,6 @@ df_raw = pd.read_csv(DATA_RAW_PATH)
 
 fitur = [
     "tka_rerata_mtk",
-    "tka_rerata_bind",
     "rasio_murid_guru",
     "rasio_murid_sekolah",
     "pct_penduduk_miskin"
@@ -38,20 +37,28 @@ labels_k3 = kmeans_3.fit_predict(X)
 kmeans_4 = KMeans(n_clusters=4, random_state=42, n_init=10)
 labels_k4 = kmeans_4.fit_predict(X)
 
-# 4. Tentukan Label Deskriptif untuk k=3
-# Cari karakteristik masing-masing klaster berdasarkan nilai rata-rata
+# 4. Tentukan Label Deskriptif untuk k=3 (Pendekatan Dinamis/Ranking)
 temp_df = df_raw.copy()
 temp_df["temp_cluster"] = labels_k3
 mean_stats = temp_df.groupby("temp_cluster")[fitur].mean()
 
-label_mapping = {}
-for c_id, row in mean_stats.iterrows():
-    if row["tka_rerata_mtk"] > 42.0:
-        label_mapping[c_id] = "Klaster 1: Wilayah Maju"
-    elif row["rasio_murid_guru"] > 20.0:
-        label_mapping[c_id] = "Klaster 2: Wilayah Darurat Sarana Prasarana"
-    else:
-        label_mapping[c_id] = "Klaster 3: Wilayah Rentan dan Terpencil"
+# Cari cluster dengan rata-rata MTK tertinggi untuk Klaster 1
+maju_cid = mean_stats["tka_rerata_mtk"].idxmax()
+sisa_cids = [c for c in mean_stats.index if c != maju_cid]
+
+# Dari sisa cluster, cari yang rasio_murid_guru tertinggi untuk Klaster 2
+if mean_stats.loc[sisa_cids[0], "rasio_murid_guru"] > mean_stats.loc[sisa_cids[1], "rasio_murid_guru"]:
+    sarpras_cid = sisa_cids[0]
+    rentan_cid = sisa_cids[1]
+else:
+    sarpras_cid = sisa_cids[1]
+    rentan_cid = sisa_cids[0]
+
+label_mapping = {
+    maju_cid: "Klaster 1: Wilayah Maju",
+    sarpras_cid: "Klaster 2: Wilayah Darurat Sarana Prasarana",
+    rentan_cid: "Klaster 3: Wilayah Rentan dan Terpencil"
+}
 
 # 5. Gabungkan Hasil Klasterisasi ke Dataset Final
 hasil_df = df_raw.copy()
@@ -80,14 +87,13 @@ print("\n=== ANGGOTA KABUPATEN/KOTA PER KLASTER ===")
 for nama_klaster, grup in hasil_df.groupby("nama_klaster_k3"):
     print(f"\n[{nama_klaster}] (Total: {len(grup)} daerah)")
     print(", ".join(grup["nama_pendek"].tolist()))
-
 # 7. Visualisasi Hasil Klasterisasi
 fig, axes = plt.subplots(2, 2, figsize=(16, 13))
 
 warna_klaster = {
-    "Klaster 1: Wilayah Maju": "#2563eb",                      # Biru (Maju/Stabil)
-    "Klaster 2: Wilayah Darurat Sarana Prasarana": "#f59e0b",   # Amber / Oranye (Peringatan Sarpras)
-    "Klaster 3: Wilayah Rentan dan Terpencil": "#dc2626"       # Merah (Prioritas Afirmasi)
+    "Klaster 1: Wilayah Maju": "#2563eb",                      # Biru
+    "Klaster 2: Wilayah Darurat Sarana Prasarana": "#f59e0b",   # Amber / Oranye
+    "Klaster 3: Wilayah Rentan dan Terpencil": "#dc2626"       # Merah
 }
 
 # Subplot 1: TKA MTK vs Persentase Kemiskinan
@@ -118,7 +124,7 @@ ax2.set_ylabel("Rasio Murid per Guru")
 ax2.grid(True, linestyle="--", alpha=0.5)
 ax2.legend(loc="upper left", fontsize=8)
 
-# Subplot 3: Bar Chart Perbandingan Z-Score Centroid Antar-Klaster
+# Subplot 3: Bar Chart Perbandingan Z-Score Centroid Antar-Klaster (4 Fitur)
 ax3 = axes[1, 0]
 df_std_labeled = df_std.copy()
 df_std_labeled["nama_klaster_k3"] = hasil_df["nama_klaster_k3"]
@@ -126,7 +132,7 @@ centroid_z = df_std_labeled.groupby("nama_klaster_k3")[fitur].mean().T
 
 posisi = np.arange(len(fitur))
 lebar = 0.25
-fitur_labels = ["TKA MTK", "TKA B.Ind", "Rasio M/G", "Rasio M/S", "Pmiskin (%)"]
+fitur_labels = ["TKA MTK", "Rasio M/G", "Rasio M/S", "Pmiskin (%)"]
 
 for idx, (nama_klaster, nilai) in enumerate(centroid_z.items()):
     warna = warna_klaster.get(nama_klaster, "gray")
@@ -148,7 +154,14 @@ bar_colors = [warna_klaster.get(name, "gray") for name in klaster_names]
 
 bars = ax4.bar(range(len(klaster_names)), klaster_counts, color=bar_colors, width=0.55, edgecolor="black")
 ax4.set_xticks(range(len(klaster_names)))
-short_labels = ["Wilayah\nMaju", "Darurat\nSarpras", "Rentan &\nTerpencil"]
+
+short_label_map = {
+    "Klaster 1: Wilayah Maju": "Wilayah\nMaju",
+    "Klaster 2: Wilayah Darurat Sarana Prasarana": "Darurat\nSarpras",
+    "Klaster 3: Wilayah Rentan dan Terpencil": "Rentan &\nTerpencil"
+}
+short_labels = [short_label_map.get(name, name) for name in klaster_names]
+
 ax4.set_xticklabels(short_labels, fontsize=9, fontweight="bold")
 ax4.set_title("Distribusi Jumlah Kabupaten/Kota per Klaster (N=27)", fontsize=11, fontweight="bold")
 ax4.set_ylabel("Jumlah Kabupaten/Kota")
