@@ -47,11 +47,11 @@ mean_stats = temp_df.groupby("temp_cluster")[fitur].mean()
 label_mapping = {}
 for c_id, row in mean_stats.iterrows():
     if row["tka_rerata_mtk"] > 42.0:
-        label_mapping[c_id] = "Klaster 1: Perkotaan Berprestasi Tinggi"
+        label_mapping[c_id] = "Klaster 1: Wilayah Maju"
     elif row["rasio_murid_guru"] > 20.0:
-        label_mapping[c_id] = "Klaster 2: Kawasan Industri / Beban Guru Padat"
+        label_mapping[c_id] = "Klaster 2: Wilayah Darurat Sarana Prasarana"
     else:
-        label_mapping[c_id] = "Klaster 3: Wilayah Berkembang / Butuh Intervensi"
+        label_mapping[c_id] = "Klaster 3: Wilayah Rentan dan Terpencil"
 
 # 5. Gabungkan Hasil Klasterisasi ke Dataset Final
 hasil_df = df_raw.copy()
@@ -85,9 +85,9 @@ for nama_klaster, grup in hasil_df.groupby("nama_klaster_k3"):
 fig, axes = plt.subplots(2, 2, figsize=(16, 13))
 
 warna_klaster = {
-    "Klaster 1: Perkotaan Berprestasi Tinggi": "#2563eb",         # Biru
-    "Klaster 2: Kawasan Industri / Beban Guru Padat": "#f59e0b",   # Amber / Oranye
-    "Klaster 3: Wilayah Berkembang / Butuh Intervensi": "#dc2626"  # Merah
+    "Klaster 1: Wilayah Maju": "#2563eb",                      # Biru (Maju/Stabil)
+    "Klaster 2: Wilayah Darurat Sarana Prasarana": "#f59e0b",   # Amber / Oranye (Peringatan Sarpras)
+    "Klaster 3: Wilayah Rentan dan Terpencil": "#dc2626"       # Merah (Prioritas Afirmasi)
 }
 
 # Subplot 1: TKA MTK vs Persentase Kemiskinan
@@ -148,7 +148,7 @@ bar_colors = [warna_klaster.get(name, "gray") for name in klaster_names]
 
 bars = ax4.bar(range(len(klaster_names)), klaster_counts, color=bar_colors, width=0.55, edgecolor="black")
 ax4.set_xticks(range(len(klaster_names)))
-short_labels = ["Perkotaan\nUnggul", "Kawasan Industri\nGuru Padat", "Berkembang\nButuh Intervensi"]
+short_labels = ["Wilayah\nMaju", "Darurat\nSarpras", "Rentan &\nTerpencil"]
 ax4.set_xticklabels(short_labels, fontsize=9, fontweight="bold")
 ax4.set_title("Distribusi Jumlah Kabupaten/Kota per Klaster (N=27)", fontsize=11, fontweight="bold")
 ax4.set_ylabel("Jumlah Kabupaten/Kota")
